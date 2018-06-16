@@ -389,6 +389,7 @@ function displayMarkersWithinTime(response) {
         for (var j = 0; j < results.length; j++) {
             var element = results[j];
             if (element.status === "OK") {
+
                 // The distance is returned in feet, but the TEXT is in miles. If we wanted to switch
                 // the function to show markers within a user-entered DISTANCE, we would need the
                 // value for distance, but for now we only need the text.
@@ -399,6 +400,7 @@ function displayMarkersWithinTime(response) {
                 var duration = element.duration.value / 60;
                 var durationText = element.duration.text;
                 if (duration <= maxDuration) {
+
                     //the origin [i] should = the markers[i]
                     markers[i].setMap(map);
                     atLeastOne = true;
@@ -406,7 +408,9 @@ function displayMarkersWithinTime(response) {
                     // Create a mini infowindow to open immediately and contain the
                     // distance and duration
                     var infowindow = new google.maps.InfoWindow({
-                        content: durationText + ' away, ' + distanceText
+                      content: durationText + ' away, ' + distanceText +
+                        '<div><input type=\"button\" value=\"View Route\" onclick =' +
+                        '\"displayDirections(&quot;' + origins[i] + '&quot;);\"></input></div>'
                     });
                     infowindow.open(map, markers[i]);
 
@@ -423,4 +427,45 @@ function displayMarkersWithinTime(response) {
     if (!atLeastOne) {
         window.alert('We could not find any locations within that distance!');
     }
+}
+
+// This function is in response to the user selecting "show route" on one
+// of the markers within the calculated distance. This will display the route
+// on the map.
+function displayDirections(origin) {
+    hideListings();
+
+    var directionsService = new google.maps.DirectionsService;
+
+    // Get the destination address from the user entered value.
+    var destinationAddress =
+        document.getElementById('search-within-time-text').value;
+
+    // Get mode again from the user entered value.
+    var mode = document.getElementById('mode').value;
+
+    directionsService.route({
+          // The origin is the passed in marker's position.
+          origin: origin,
+
+          // The destination is user entered address.
+          destination: destinationAddress,
+
+          travelMode: google.maps.TravelMode[mode]
+      },
+      function(response, status) {
+          if (status === google.maps.DirectionsStatus.OK) {
+              var directionsDisplay = new google.maps.DirectionsRenderer({
+                  map: map,
+                  directions: response,
+                  draggable: true,
+                  polylineOptions: {
+                      strokeColor: 'green'
+                  }
+          });
+      }
+      else {
+          window.alert('Directions request failed due to ' + status);
+      }
+    });
 }
