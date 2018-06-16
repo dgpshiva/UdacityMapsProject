@@ -180,6 +180,9 @@ function initMap() {
       // Searching within the polygon.
       searchWithinPolygon();
 
+      // Calulcate area within the polygon
+      calculateArea(polygon.getPath());
+
       // Make sure the search is re-done if the poly is changed.
       polygon.getPath().addListener('set_at', searchWithinPolygon);
       polygon.getPath().addListener('insert_at', searchWithinPolygon);
@@ -309,4 +312,10 @@ function searchWithinPolygon() {
             markers[i].setMap(null);
         }
     }
+}
+
+// Calculate area within polygon and alert user
+function calculateArea(ploygonBorders) {
+  var area = google.maps.geometry.spherical.computeArea(ploygonBorders);
+  alert("Area enclosed within the selection: " + area + " m2");
 }
