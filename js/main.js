@@ -157,6 +157,14 @@ function initMap() {
       toggleDrawing(drawingManager);
     });
 
+    document.getElementById('zoom-to-area').addEventListener('click', function() {
+      zoomToArea();
+    });
+
+    document.getElementById('submit').addEventListener('click', function() {
+      geocodeAddress(map);
+    });
+
 
     // Add an event listener so that the polygon is captured,  call the
     // searchWithinPolygon function. This will show the markers in the polygon,
@@ -318,4 +326,62 @@ function searchWithinPolygon() {
 function calculateArea(ploygonBorders) {
   var area = google.maps.geometry.spherical.computeArea(ploygonBorders);
   alert("Area enclosed within the selection: " + area + " m2");
+}
+
+
+// This function takes the input value in the find nearby area text input
+// locates it, and then zooms into that area. This is so that the user can
+// show all listings, then decide to focus on one area of the map.
+function zoomToArea() {
+
+    // Initialize the geocoder.
+    var geocoder = new google.maps.Geocoder();
+
+    // Get the address or place that the user entered.
+    var address = document.getElementById('zoom-to-area-text').value;
+
+    // Make sure the address isn't blank.
+    if (address == '') {
+        window.alert('You must enter an area, or address.');
+    }
+    else {
+        // Geocode the address/area entered to get the center. Then, center the map
+        // on it and zoom in
+        geocoder.geocode({
+            address: address,
+            componentRestrictions: {locality: 'New York'}
+            },
+            function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(15);
+                }
+                else {
+                    window.alert('We could not find that location - try entering a more' +
+                    ' specific place.');
+                }
+            });
+    }
+}
+
+function geocodeAddress(resultsMap) {
+
+    // Initialize the geocoder.
+    var geocoder = new google.maps.Geocoder();
+
+    var address = document.getElementById('address').value;
+
+    geocoder.geocode({'address': address},
+      function(results, status) {
+        if (status === google.maps.GeocoderStatus.OK) {
+            resultsMap.setCenter(results[0].geometry.location);
+
+            //TODO: Insert code here to take the first result's formatted address, and LOCATION.
+            document.getElementById('firstComponent').innerHTML="The Formatted Address is:" + results[0].formatted_address;  // PUT STUFF HERE
+            document.getElementById('secondComponent').innerHTML="The Location is" +  String(results[0].location);
+    }
+    else {
+        alert('Geocode was not successful for the following reason: ' + status);
+    }
+  });
 }
