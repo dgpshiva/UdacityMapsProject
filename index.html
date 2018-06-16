@@ -14,12 +14,15 @@
             <div>
                 <input id="show-listings" type="button" value="Show Listings">
                 <input id="hide-listings" type="button" value="Hide Listings">
+                <hr>
+                <span class="text"> Draw a shape to search within it for homes!</span>
+                <input id="toggle-drawing"  type="button" value="Drawing Tools">
             </div>
         </div>
         <div id="map"></div>
     </div>
 
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPO4pFWQ4o_ClesgktNVhPLxSlinrW32E&libraries=geometry&v=3&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPO4pFWQ4o_ClesgktNVhPLxSlinrW32E&libraries=drawing,geometry&v=3&callback=initMap"></script>
     <script src="js/main.js"></script>
 </body>
 </html>
