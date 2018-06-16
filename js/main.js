@@ -82,6 +82,17 @@ function initMap() {
         mapTypeControl: false
     });
 
+    // This autocomplete is for use in the search within time entry box.
+    var timeAutocomplete = new google.maps.places.Autocomplete(
+                            document.getElementById('search-within-time-text'));
+
+    // This autocomplete is for use in the geocoder entry box.
+    var zoomAutocomplete = new google.maps.places.Autocomplete(
+                            document.getElementById('zoom-to-area-text'));
+
+    //Bias the boundaries within the map for the zoom to area text.
+    zoomAutocomplete.bindTo('bounds', map);
+
     // These are the real estate listings that will be shown to the user.
     // Normally we'd have these in a database instead.
     var locations = [
@@ -149,6 +160,10 @@ function initMap() {
         this.setIcon(defaultIcon);
       });
     }
+
+    document.getElementById('zoom-to-area').addEventListener('click', function() {
+      zoomToArea();
+    });
 
     document.getElementById('show-listings').addEventListener('click', showListings);
     document.getElementById('hide-listings').addEventListener('click', hideListings);
@@ -468,4 +483,40 @@ function displayDirections(origin) {
           window.alert('Directions request failed due to ' + status);
       }
     });
+}
+
+
+// This function takes the input value in the find nearby area text input
+// locates it, and then zooms into that area. This is so that the user can
+// show all listings, then decide to focus on one area of the map.
+function zoomToArea() {
+
+    // Initialize the geocoder.
+    var geocoder = new google.maps.Geocoder();
+
+    // Get the address or place that the user entered.
+    var address = document.getElementById('zoom-to-area-text').value;
+    // Make sure the address isn't blank.
+    if (address == '') {
+        window.alert('You must enter an area, or address.');
+    }
+    else {
+          // Geocode the address/area entered to get the center. Then, center the map
+          // on it and zoom in
+          geocoder.geocode(
+            {
+                address: address,
+                componentRestrictions: {locality: 'New York'}
+            },
+            function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    map.setCenter(results[0].geometry.location);
+                    map.setZoom(15);
+                }
+                else {
+                    window.alert('We could not find that location - try entering a more' +
+                    ' specific place.');
+                }
+          });
+    }
 }
