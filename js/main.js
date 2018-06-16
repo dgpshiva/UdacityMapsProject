@@ -161,6 +161,11 @@ function initMap() {
       searchWithinTime();
     });
 
+    document.getElementById('quiz-calculate').addEventListener('click', function() {
+      quizCalculate();
+    });
+
+
 
     // Add an event listener so that the polygon is captured,  call the
     // searchWithinPolygon function. This will show the markers in the polygon,
@@ -467,5 +472,53 @@ function displayDirections(origin) {
       else {
           window.alert('Directions request failed due to ' + status);
       }
+    });
+}
+
+
+function quizCalculate() {
+    var directionsService = new google.maps.DirectionsService;
+
+    directionsService.route({
+
+        // The origin is the passed in marker's position.
+        origin: "Florence",
+
+        // The destination is user entered address.
+        destination: "Milan",
+
+        travelMode: 'DRIVING',
+
+        waypoints: [
+            {
+                location: 'Genoa',
+                stopover: true
+            },
+            {
+              location: 'Bologna',
+              stopover: true
+            },
+            {
+                location: 'Venice',
+                stopover: true
+            }],
+
+        optimizeWaypoints: true
+
+    },
+    function(response, status) {
+        if (status === google.maps.DirectionsStatus.OK) {
+            var directionsDisplay = new google.maps.DirectionsRenderer({
+                map: map,
+                directions: response,
+                draggable: true,
+                polylineOptions: {
+                    strokeColor: 'green'
+                }
+        });
+    }
+    else {
+        window.alert('Directions request failed due to ' + status);
+    }
     });
 }
