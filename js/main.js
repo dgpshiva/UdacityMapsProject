@@ -94,12 +94,14 @@ function initMap() {
 
     // Style the markers a bit. This will be our listing marker icon.
     var defaultIcon = makeMarkerIcon('0091ff');
+
     // Create a "highlighted location" marker color for when the user
     // mouses over the marker.
     var highlightedIcon = makeMarkerIcon('FFFF24');
 
     // The following group uses the location array to create an array of markers on initialize.
     for (var i = 0; i < locations.length; i++) {
+
         // Get the position from the location array.
         var position = locations[i].location;
 
@@ -140,37 +142,73 @@ function initMap() {
 // one infowindow which will open at the marker that is clicked, and populate based
 // on that markers position.
 function populateInfoWindow(marker, infowindow) {
-    // Check to make sure the infowindow is not already opened on this marker.
-    if (infowindow.marker != marker) {
-        infowindow.marker = marker;
-        infowindow.setContent('<div>' + marker.title + '</div>');
-        infowindow.open(map, marker);
-        // Make sure the marker property is cleared if the infowindow is closed.
-        infowindow.addListener('closeclick',function(){
-          infowindow.setMarker = null;
-        });
-      }
+
+  // Check to make sure the infowindow is not already opened on this marker.
+  if (infowindow.marker != marker) {
+
+    // Clear the infowindow content to give the streetview time to load.
+    infowindow.setContent('');
+
+    infowindow.marker = marker;
+
+    // Make sure the marker property is cleared if the infowindow is closed.
+    infowindow.addListener('closeclick', function() {
+      infowindow.marker = null;
+    });
+
+    var streetViewService = new google.maps.StreetViewService();
+    var radius = 50;
+
+    // Use streetview service to get the closest streetview image within
+    // 50 meters of the markers position
+    streetViewService.getPanoramaByLocation(marker.position, radius, getStreetView);
+
+    // In case the status is OK, which means the pano was found, compute the
+    // position of the streetview image, then calculate the heading, then get a
+    // panorama from that and set the options
+    function getStreetView(data, status) {
+        if (status == google.maps.StreetViewStatus.OK) {
+            var nearStreetViewLocation = data.location.latLng;
+            var heading = google.maps.geometry.spherical.computeHeading(
+                            nearStreetViewLocation, marker.position);
+
+            infowindow.setContent('<div>' + marker.title + '</div><div id="pano"></div>');
+            var panoramaOptions = {
+                position: nearStreetViewLocation,
+                pov: {
+                    heading: heading,
+                    pitch: 30
+                }
+            };
+
+            var panorama = new google.maps.StreetViewPanorama(
+                document.getElementById('pano'), panoramaOptions);
+        }
+        else {
+            infowindow.setContent('<div>' + marker.title + '</div>' +
+              '<div>No Street View Found</div>');
+        }
+    }
+
+    // Open the infowindow on the correct marker.
+    infowindow.open(map, marker);
+
+  }
 }
 
-  // This function will loop through the markers array and display them all.
-  function showListings() {
+// This function will loop through the markers array and display them all.
+function showListings() {
+  var bounds = new google.maps.LatLngBounds();
 
-
-    var bounds = new google.maps.LatLngBounds();
-
-    // Extend the boundaries of the map for each marker and display the marker
-    for (var i = 0; i < markers.length; i++) {
-        markers[i].setMap(map);
-
-        // if (markers[i].title === "Chelsea Loft") {
-        //   markers[i].icon = 'resources/blue-pin.png';
-        // }
-
-        bounds.extend(markers[i].position);
-    }
+  // Extend the boundaries of the map for each marker and display the marker
+  for (var i = 0; i < markers.length; i++) {
+      markers[i].setMap(map);
+      bounds.extend(markers[i].position);
+  }
 
     map.fitBounds(bounds);
 }
+
 // This function will loop through the listings and hide them all.
 function hideListings() {
     for (var i = 0; i < markers.length; i++) {
@@ -192,3 +230,4 @@ function makeMarkerIcon(markerColor) {
 
         return markerImage;
 }
+
